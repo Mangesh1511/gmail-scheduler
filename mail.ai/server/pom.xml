@@ -12,10 +12,10 @@
     </parent>
 
     <groupId>com.example</groupId>
-    <artifactId>schedule-service</artifactId>
+    <artifactId>mail-ai-server</artifactId>
     <version>0.1.0-SNAPSHOT</version>
-    <name>schedule-service</name>
-    <description>API for creating and listing scheduled email jobs</description>
+    <name>mail-ai-server</name>
+    <description>Cloud application for scheduling Gmail messages</description>
 
     <properties>
         <java.version>21</java.version>
@@ -33,6 +33,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>

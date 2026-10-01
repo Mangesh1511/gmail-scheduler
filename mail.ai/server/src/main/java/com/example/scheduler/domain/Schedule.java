@@ -11,6 +11,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
+import jakarta.persistence.Index;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -19,7 +20,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "schedules")
+@Table(name = "schedules", indexes = @Index(name = "idx_schedules_owner_created", columnList = "owner_id,created_at"))
 public class Schedule {
     @Id
     @GeneratedValue
@@ -36,7 +37,7 @@ public class Schedule {
     @Column(nullable = false)
     private ScheduleState state;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "schedule_recipients", joinColumns = @JoinColumn(name = "schedule_id"))
     @Column(name = "recipient", nullable = false)
     private List<String> recipients = new ArrayList<>();
