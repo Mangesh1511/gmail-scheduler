@@ -20,13 +20,12 @@ public record ScheduleResponse(
         Instant startAt,
         Instant endAt,
         Long intervalSeconds,
-        Instant createdAt,
-        List<JobResponse> jobs
+        Instant createdAt
 ) {
-    public static ScheduleResponse from(Schedule schedule, List<JobResponse> jobs) {
+    public static ScheduleResponse from(Schedule schedule) {
         return new ScheduleResponse(schedule.getId(), schedule.getType(), schedule.getState(),
                 schedule.getRecipients(), schedule.getSubject(), schedule.getBody(), schedule.getTimezone(),
                 schedule.getStartAt(), schedule.getEndAt(), schedule.getIntervalSeconds(),
-                schedule.getCreatedAt(), jobs);
+                schedule.getCreatedAt());
     }
 }

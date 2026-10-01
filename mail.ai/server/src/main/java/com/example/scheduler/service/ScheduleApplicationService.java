@@ -2,7 +2,6 @@ package com.example.scheduler.service;
 
 import com.example.scheduler.api.CreateFixedScheduleRequest;
 import com.example.scheduler.api.CreateRecurrenceScheduleRequest;
-import com.example.scheduler.api.JobResponse;
 import com.example.scheduler.api.ScheduleResponse;
 import com.example.scheduler.domain.EmailJob;
 import com.example.scheduler.domain.EmailJobRepository;
@@ -35,8 +34,8 @@ public class ScheduleApplicationService {
         Schedule schedule = scheduleRepository.save(new Schedule(ownerId, ScheduleType.FIXED,
                 request.recipients(), request.subject(), request.body(), request.timezone(),
                 request.sendAt(), request.sendAt(), null));
-        EmailJob job = jobRepository.save(new EmailJob(schedule, request.sendAt()));
-        return ScheduleResponse.from(schedule, List.of(JobResponse.from(job)));
+        jobRepository.save(new EmailJob(schedule, request.sendAt()));
+        return ScheduleResponse.from(schedule);
     }
 
     @Transactional
@@ -52,16 +51,14 @@ public class ScheduleApplicationService {
                 request.startAt(), request.endAt(), request.intervalSeconds()));
 
         List<EmailJob> jobs = generateJobs(schedule, request.startAt(), request.endAt(), request.intervalSeconds());
-        List<EmailJob> savedJobs = jobRepository.saveAll(jobs);
-        return ScheduleResponse.from(schedule, savedJobs.stream().map(JobResponse::from).toList());
+        jobRepository.saveAll(jobs);
+        return ScheduleResponse.from(schedule);
     }
 
     @Transactional(readOnly = true)
     public List<ScheduleResponse> listSchedules(String ownerId) {
         return scheduleRepository.findByOwnerIdOrderByCreatedAtDesc(ownerId).stream()
-                .map(schedule -> ScheduleResponse.from(schedule,
-                        jobRepository.findByScheduleIdOrderByDueAtAsc(schedule.getId()).stream()
-                                .map(JobResponse::from).toList()))
+                .map(ScheduleResponse::from)
                 .toList();
     }
 

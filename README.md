@@ -1,12 +1,11 @@
 # mail.ai
 
-Cloud-hosted prototype for creating scheduled Gmail messages from a user request.
+Cloud-hosted prototype for scheduling Gmail messages.
 
-## Monorepo layout
+## Layout
 
-- `mail.ai/schedule-service/` — Spring Boot API for creating and listing schedules and jobs.
-- `mail.ai/email-worker/` — planned independent Spring Boot service for sending due jobs through Gmail.
+- `mail.ai/server/` — single Spring Boot application for the user-facing schedule API and the protected QStash send callback.
 - `plan.md` — architecture and scope decisions.
 - `progress.md` — implementation status and next steps.
 
-Each service is built and deployed independently. See the service-specific `AGENTS.md` for local conventions.
+The user-facing API and the internal send handler are separate application components and use distinct authentication policies, but deploy together for the prototype.
