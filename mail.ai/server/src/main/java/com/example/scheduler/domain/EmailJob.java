@@ -37,6 +37,14 @@ public class EmailJob {
 
     private Instant createdAt;
 
+    private Instant startedAt;
+    private Instant completedAt;
+
+    @Column(length = 2000)
+    private String lastError;
+
+    private String gmailMessageId;
+
     protected EmailJob() {}
 
     public EmailJob(Schedule schedule, Instant dueAt) {
@@ -51,4 +59,29 @@ public class EmailJob {
     public Instant getDueAt() { return dueAt; }
     public JobState getState() { return state; }
     public Instant getCreatedAt() { return createdAt; }
+    public Instant getStartedAt() { return startedAt; }
+    public Instant getCompletedAt() { return completedAt; }
+    public String getLastError() { return lastError; }
+    public String getGmailMessageId() { return gmailMessageId; }
+
+    public void markStarted() { startedAt = Instant.now(); }
+
+    public boolean claim() {
+        if (state != JobState.PENDING || dueAt.isAfter(Instant.now()) || schedule.getState() != ScheduleState.ACTIVE) return false;
+        state = JobState.SENDING;
+        startedAt = Instant.now();
+        return true;
+    }
+
+    public void sent(String messageId) {
+        state = JobState.SENT;
+        gmailMessageId = messageId;
+        completedAt = Instant.now();
+    }
+
+    public void failed(String error) {
+        state = JobState.FAILED;
+        lastError = error == null ? "Unknown send failure" : error.substring(0, Math.min(error.length(), 2000));
+        completedAt = Instant.now();
+    }
 }

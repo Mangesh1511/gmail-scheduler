@@ -1,0 +1,8 @@
+.git
+.env
+.env.*
+.local
+**/target
+**/bin
+**/.settings
+node_modules

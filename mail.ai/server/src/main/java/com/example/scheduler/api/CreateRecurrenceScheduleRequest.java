@@ -11,11 +11,14 @@ import java.time.ZoneId;
 import java.util.List;
 
 public record CreateRecurrenceScheduleRequest(
-        @NotEmpty List<@Email String> recipients,
-        @NotBlank String subject,
-        @NotBlank String body,
-        @NotNull Instant startAt,
-        @NotNull Instant endAt,
-        @Min(3600) long intervalSeconds,
-        @NotNull ZoneId timezone
+        @NotEmpty(message = "Add at least one recipient.")
+        List<@NotBlank(message = "Recipient email is required.")
+             @Email(message = "Enter a valid email address.") String> recipients,
+        @NotBlank(message = "Subject is required.") String subject,
+        @NotBlank(message = "Email body is required.") String body,
+        @NotNull(message = "Start time is required.") Instant startAt,
+        @NotNull(message = "End time is required.") Instant endAt,
+        @Min(value = 3600, message = "Recurrence interval must be at least 3600 seconds (one hour).")
+        long intervalSeconds,
+        @NotNull(message = "Timezone is required.") ZoneId timezone
 ) {}

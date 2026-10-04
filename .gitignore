@@ -4,4 +4,9 @@
 .env
 .env.*
 !.env.example
+.local/
 .DS_Store
+**/.classpath
+**/.project
+**/.settings/
+/mail.ai/server/bin/

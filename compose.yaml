@@ -16,5 +16,64 @@ services:
       timeout: 3s
       retries: 10
 
+  mongodb:
+    image: mongo:7.0
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - mailai-mongodb:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand({ ping: 1 }).ok"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+
+  qstash:
+    image: public.ecr.aws/upstash/qstash:latest
+    restart: unless-stopped
+    command: ["qstash", "dev", "-port=8080", "-log-port=8081"]
+    ports:
+      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:8081:8081"
+
+  app:
+    image: mailai-scheduler:local
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: true
+      - path: .local/qstash.env
+        required: false
+    environment:
+      SPRING_PROFILES_ACTIVE: postgres
+      SERVER_PORT: "8082"
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-mailai}
+      MONGODB_URI: mongodb://mongodb:27017/mailai_chat
+      CHAT_STORE: mongo
+      AI_PROVIDER: ${AI_PROVIDER:-bedrock-converse}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      AI_MODEL: ${AI_MODEL:-us.anthropic.claude-sonnet-4-6}
+      QSTASH_ENABLED: "true"
+      QSTASH_URL: http://qstash:8080
+      PUBLIC_BASE_URL: http://app:8082
+      GOOGLE_REDIRECT_URI: http://localhost:8082/auth/google/callback
+      FRONTEND_BASE_URL: ${FRONTEND_BASE_URL:-http://localhost:4201}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:4201}
+    ports:
+      - "127.0.0.1:8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      qstash:
+        condition: service_started
+
 volumes:
   mailai-postgres:
+  mailai-mongodb:

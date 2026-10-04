@@ -5,6 +5,9 @@ spring:
     url: jdbc:h2:mem:schedules;DB_CLOSE_DELAY=-1
     username: sa
     password:
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/mailai_chat}
   jpa:
     hibernate:
       ddl-auto: update
@@ -13,4 +16,34 @@ spring:
     console:
       enabled: true
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        same-site: ${SESSION_COOKIE_SAME_SITE:lax}
+        secure: ${SESSION_COOKIE_SECURE:false}
+app:
+  ai:
+    provider: ${AI_PROVIDER:none}
+    bedrock:
+      region: ${AWS_REGION:us-east-1}
+      model: ${AI_MODEL:us.anthropic.claude-sonnet-4-6}
+  chat:
+    store: ${CHAT_STORE:memory}
+    proposal-store: ${CHAT_PROPOSAL_STORE:jpa}
+  public-base-url: ${PUBLIC_BASE_URL:http://localhost:${server.port}}
+  frontend-base-url: ${FRONTEND_BASE_URL:http://localhost:4201}
+  cors:
+    allowed-origin: ${FRONTEND_ORIGIN:http://localhost:4201}
+  token-encryption-key: ${TOKEN_ENCRYPTION_KEY:}
+  google:
+    client-id: ${GOOGLE_CLIENT_ID:}
+    client-secret: ${GOOGLE_CLIENT_SECRET:}
+    redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:${server.port}/auth/google/callback}
+  qstash:
+    enabled: ${QSTASH_ENABLED:false}
+    url: ${QSTASH_URL:https://qstash.upstash.io}
+    token: ${QSTASH_TOKEN:}
+    current-signing-key: ${QSTASH_CURRENT_SIGNING_KEY:}
+    next-signing-key: ${QSTASH_NEXT_SIGNING_KEY:}
