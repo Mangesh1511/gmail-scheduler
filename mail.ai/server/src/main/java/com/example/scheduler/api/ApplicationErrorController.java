@@ -51,7 +51,7 @@ public class ApplicationErrorController implements ErrorController {
                         "status", status.value(),
                         "error", status.getReasonPhrase(),
                         "message", message,
-                        "path", requestPath instanceof String path ? path : ""
+                        "path", requestPath instanceof String errorPath ? errorPath : ""
                 ));
     }
 
