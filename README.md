@@ -2,7 +2,7 @@
 
 Cloud-hosted prototype for scheduling Gmail messages. The Schedule API and internal QStash callback run in one Spring Boot application. Jobs are internal and are not returned by the user-facing API.
 
-The Angular frontend is maintained in the separate [mail-ai-web repository](https://github.com/Mangesh1511/mail-ai-web). Locally, it discovers the backend's selected port through the health endpoint.
+The Angular frontend is maintained in the separate [mail-ai-web repository](https://github.com/Mangesh1511/mail-ai-web). 
 
 ## Architecture diagrams
 
