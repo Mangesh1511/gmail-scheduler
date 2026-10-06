@@ -2,12 +2,27 @@
 
 Cloud-hosted prototype for scheduling Gmail messages. The Schedule API and internal QStash callback run in one Spring Boot application. Jobs are internal and are not returned by the user-facing API.
 
-The Angular frontend lives in the separate `/Users/mangeshpatil/repos/mail-ai-web` repository. It discovers the backend's selected local port through the health endpoint.
+The Angular frontend is maintained in the separate [mail-ai-web repository](https://github.com/Mangesh1511/mail-ai-web). Locally, it discovers the backend's selected port through the health endpoint.
+
+## Architecture diagrams
+
+### High-level design
+
+![Mail.ai high-level design](docs/images/mail-ai-hld.png)
+
+### Chat request and proposal sequence
+
+![Chat request, model classification, and proposal validation sequence](docs/images/chat-sequence.png)
+
+### End-to-end email workflow
+
+![Mail.ai email scheduling and delivery workflow](docs/images/mail-ai-workflow.png)
 
 ## Prerequisites
 
 - Docker Desktop with Docker Compose
 - Java 21 and Maven 3.9+ only for the optional H2 backend mode
+- For the complete chat-and-email flow: a Google OAuth Web client and an Amazon Bedrock bearer API key
 
 ## Start the full local stack
 
@@ -19,9 +34,22 @@ source ./buildenv.bash
 start_app
 ```
 
-You can source `buildenv.bash` by its full path from another directory too. The first `start_app` creates `.env` from `.env.example` when needed, then pauses so you can add `GOOGLE_CLIENT_SECRET` and `AWS_BEARER_TOKEN_BEDROCK`; source the file again and run `start_app` after saving those values. The helper locates the repository itself, so you do not need to `cd` into it first.
+You can source `buildenv.bash` by its full path from another directory too. The first `start_app` creates `.env` from `.env.example` when needed, then pauses for configuration. Set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `AWS_BEARER_TOKEN_BEDROCK` to credentials you provide; the full-stack startup requires all three. The helper locates the repository itself, so you do not need to `cd` into it first.
 
-If `TOKEN_ENCRYPTION_KEY` is blank, the script creates a local 32-byte key and stores it in `.env`. The app is available at `http://localhost:8082`; Google OAuth should use `http://localhost:8082/auth/google/callback` as its authorized redirect URI. Start the Angular UI separately from `mail-ai-web` with `npm start`.
+If `TOKEN_ENCRYPTION_KEY` is blank, the script creates a local 32-byte key and stores it in `.env`. Before connecting Gmail, configure a Google OAuth Web application and add `http://localhost:8082/auth/google/callback` as an authorized redirect URI. The backend is available at `http://localhost:8082`.
+
+The full local chat-and-email flow needs your own Google OAuth credentials and Amazon Bedrock bearer API key. These are not included in the repository. Without those credentials, use the minimal H2 mode for backend-only work; it does not provide the full MongoDB, QStash, Bedrock, and Gmail flow.
+
+In a second terminal, clone and start the frontend:
+
+```bash
+git clone https://github.com/Mangesh1511/mail-ai-web.git
+cd mail-ai-web
+npm ci
+npm start
+```
+
+Open `http://localhost:4201`. For frontend-specific requirements and deployment configuration, see the frontend repository README.
 
 Before the first containerized start, stop any host-run Spring, QStash, MongoDB, or PostgreSQL processes that already occupy ports 8080–8082, 27017, or 5432. The script detects occupied ports and reports them before starting the stack.
 
@@ -32,7 +60,7 @@ For backend logs, run `app_logs`. For dependency logs, run `docker compose logs 
 ## Minimal backend only (H2)
 
 ```bash
-cd /Users/mangeshpatil/repos/gmail-scheduler/mail.ai/server
+cd mail.ai/server
 mvn spring-boot:run
 ```
 
@@ -124,6 +152,7 @@ Times are supplied as ISO-8601 instants; `timezone` is retained as schedule cont
 
 ## Project documentation
 
-- `plan.md` — architecture, requirements, and design decisions.
-- `progress.md` — implementation and verification status.
+- `docs/design.md` — high-level design, workflow, component details, and interview preparation.
 - `AGENTS.md` — project-specific development guidance.
+
+For frontend-specific requirements and deployment configuration, use the `mail-ai-web` repository README.

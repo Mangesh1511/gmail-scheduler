@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1680" height="1000" viewBox="0 0 1680 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Mail.ai high-level design</title>
+  <desc id="desc">Angular frontend talks to a Spring Boot service, which integrates with PostgreSQL, MongoDB, Bedrock, QStash, Google OAuth, and Gmail.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f7f8ff"/><stop offset="1" stop-color="#eef2fb"/></linearGradient>
+    <linearGradient id="api" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6758e8"/><stop offset="1" stop-color="#5145c7"/></linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#26314f" flood-opacity=".09"/></filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#7d83a1"/></marker>
+    <marker id="arrowPurple" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#6758e8"/></marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#319a76"/></marker>
+    <style>
+      text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#202538}
+      .title{font-size:36px;font-weight:760;letter-spacing:-.8px}.sub{font-size:16px;fill:#737b91}
+      .section{font-size:13px;font-weight:800;letter-spacing:2px;fill:#7d8499}
+      .cardtitle{font-size:19px;font-weight:740}.body{font-size:14px;fill:#687187}.small{font-size:12px;fill:#747c91}
+      .white{fill:#fff}.accent{fill:#6558e8}.green{fill:#278566}
+    </style>
+  </defs>
+  <rect width="1680" height="1000" fill="url(#bg)"/>
+  <text x="64" y="70" class="title">Mail.ai · High-level design</text>
+  <text x="64" y="102" class="sub">One Spring Boot deployment coordinates chat, scheduling, and the protected send worker.</text>
+
+  <text x="70" y="164" class="section">CLIENT</text>
+  <text x="500" y="164" class="section">APPLICATION · CLOUD RUN</text>
+  <text x="1265" y="164" class="section">MANAGED SERVICES</text>
+
+  <g filter="url(#shadow)">
+    <rect x="70" y="300" width="330" height="300" rx="24" fill="#fff" stroke="#e2e6f0"/>
+    <rect x="70" y="300" width="9" height="300" rx="4" fill="#6758e8"/>
+    <circle cx="116" cy="348" r="18" fill="#eeeaff"/><text x="116" y="354" text-anchor="middle" class="accent" font-size="19" font-weight="800">m</text>
+    <text x="148" y="354" class="cardtitle">Mail.ai web app</text>
+    <text x="101" y="405" class="body">Angular · hosted on Vercel</text>
+    <line x1="101" y1="427" x2="366" y2="427" stroke="#edf0f6"/>
+    <text x="101" y="460" class="body">• Chat, proposal review, schedules</text>
+    <text x="101" y="490" class="body">• Sends session cookie over HTTPS</text>
+    <text x="101" y="520" class="body">• No Gmail tokens or job execution</text>
+    <rect x="101" y="550" width="162" height="27" rx="13" fill="#f1efff"/><text x="182" y="568" text-anchor="middle" class="small accent" font-weight="700">browser client</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="500" y="190" width="620" height="700" rx="25" fill="#fff" stroke="#dfe3ef"/>
+    <path d="M525 190H1095Q1120 190 1120 215V270H500V215Q500 190 525 190Z" fill="url(#api)"/>
+    <text x="535" y="229" class="white" font-size="22" font-weight="760">Spring Boot API</text>
+    <text x="535" y="253" class="white" font-size="13" opacity=".82">Java 21 · authenticated REST + SSE · one deployment</text>
+
+    <rect x="535" y="300" width="255" height="145" rx="17" fill="#f5f3ff" stroke="#e8e3ff"/>
+    <circle cx="562" cy="330" r="13" fill="#6758e8"/><text x="562" y="335" text-anchor="middle" class="white" font-size="12" font-weight="800">1</text>
+    <text x="585" y="336" class="cardtitle" font-size="16">Auth &amp; ownership</text>
+    <text x="555" y="371" class="body">Google OAuth · session cookie</text>
+    <text x="555" y="397" class="body">Owner-scoped requests</text>
+    <text x="555" y="423" class="small">Refresh tokens stay server-side</text>
+
+    <rect x="810" y="300" width="275" height="145" rx="17" fill="#f5f3ff" stroke="#e8e3ff"/>
+    <circle cx="837" cy="330" r="13" fill="#6758e8"/><text x="837" y="335" text-anchor="middle" class="white" font-size="12" font-weight="800">2</text>
+    <text x="860" y="336" class="cardtitle" font-size="16">Chat &amp; proposals</text>
+    <text x="830" y="371" class="body">Provider-neutral LLM boundary</text>
+    <text x="830" y="397" class="body">Validate · persist · require confirm</text>
+    <text x="830" y="423" class="small">Model suggests; backend decides</text>
+
+    <rect x="535" y="465" width="550" height="150" rx="17" fill="#f0f8f5" stroke="#d8eee5"/>
+    <circle cx="562" cy="495" r="13" fill="#319a76"/><text x="562" y="500" text-anchor="middle" class="white" font-size="12" font-weight="800">3</text>
+    <text x="585" y="501" class="cardtitle" font-size="16">Schedule application service</text>
+    <text x="555" y="537" class="body">Persists schedules and concrete due-time jobs in one DB transaction</text>
+    <text x="555" y="565" class="body">Publishes jobs to QStash after commit</text>
+    <text x="555" y="594" class="small">Known gap: no transactional outbox for publish recovery yet</text>
+
+    <rect x="535" y="635" width="550" height="200" rx="17" fill="#fff8ed" stroke="#f4e5ca"/>
+    <circle cx="562" cy="665" r="13" fill="#d79b39"/><text x="562" y="670" text-anchor="middle" class="white" font-size="12" font-weight="800">4</text>
+    <text x="585" y="671" class="cardtitle" font-size="16">Internal job endpoint &amp; worker</text>
+    <text x="555" y="707" class="body">Verify QStash signature · atomically claim due job</text>
+    <text x="555" y="735" class="body">Refresh user's Google access token · send with Gmail API</text>
+    <text x="555" y="763" class="body">Persist SENT / FAILED and provider message ID</text>
+    <text x="555" y="805" class="small">Duplicate callbacks are guarded by the database claim</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="1265" y="185" width="350" height="132" rx="20" fill="#fff" stroke="#e2e6f0"/>
+    <rect x="1265" y="185" width="7" height="132" rx="3" fill="#278566"/>
+    <text x="1290" y="222" class="cardtitle">PostgreSQL · Aiven</text>
+    <text x="1290" y="253" class="body">Accounts · proposals · schedules · jobs</text>
+    <text x="1290" y="280" class="small">Source of truth for delivery state</text>
+
+    <rect x="1265" y="345" width="350" height="132" rx="20" fill="#fff" stroke="#e2e6f0"/>
+    <rect x="1265" y="345" width="7" height="132" rx="3" fill="#2491a5"/>
+    <text x="1290" y="382" class="cardtitle">MongoDB Atlas</text>
+    <text x="1290" y="413" class="body">Conversation documents and messages</text>
+    <text x="1290" y="440" class="small">Retrieved within owner scope</text>
+
+    <rect x="1265" y="505" width="350" height="132" rx="20" fill="#fff" stroke="#e2e6f0"/>
+    <rect x="1265" y="505" width="7" height="132" rx="3" fill="#6b5ce7"/>
+    <text x="1290" y="542" class="cardtitle">Amazon Bedrock</text>
+    <text x="1290" y="573" class="body">Conversational response + intent shape</text>
+    <text x="1290" y="600" class="small">No tools; cannot schedule or send</text>
+
+    <rect x="1265" y="665" width="350" height="132" rx="20" fill="#fff" stroke="#e2e6f0"/>
+    <rect x="1265" y="665" width="7" height="132" rx="3" fill="#d79b39"/>
+    <text x="1290" y="702" class="cardtitle">QStash</text>
+    <text x="1290" y="733" class="body">Stores delayed HTTP delivery requests</text>
+    <text x="1290" y="760" class="small">Calls signed backend URL at due time</text>
+
+    <rect x="1265" y="825" width="350" height="132" rx="20" fill="#fff" stroke="#e2e6f0"/>
+    <rect x="1265" y="825" width="7" height="132" rx="3" fill="#e25466"/>
+    <text x="1290" y="862" class="cardtitle">Google OAuth + Gmail</text>
+    <text x="1290" y="893" class="body">User authorization · email delivery API</text>
+    <text x="1290" y="920" class="small">Encrypted refresh token stays in backend</text>
+  </g>
+
+  <path d="M400 450H493" fill="none" stroke="#6758e8" stroke-width="3" marker-end="url(#arrowPurple)"/>
+  <rect x="408" y="414" width="79" height="25" rx="12" fill="#f1efff"/><text x="447" y="431" text-anchor="middle" class="small accent" font-weight="700">HTTPS</text>
+
+  <path d="M1120 530H1188V251H1255" fill="none" stroke="#7d83a1" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <path d="M1188 411H1255" fill="none" stroke="#7d83a1" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <path d="M1188 571H1255" fill="none" stroke="#7d83a1" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <path d="M1188 731H1255" fill="none" stroke="#7d83a1" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <path d="M1188 891H1255" fill="none" stroke="#7d83a1" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <path d="M1265 750H1132" fill="none" stroke="#d79b39" stroke-width="2.5" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+  <rect x="1128" y="754" width="133" height="30" rx="14" fill="#fff8ed"/><text x="1195" y="774" text-anchor="middle" class="small" fill="#996a20">signed callback</text>
+
+  <rect x="64" y="944" width="1110" height="34" rx="17" fill="#fff" opacity=".8"/>
+  <text x="84" y="966" class="small">Solid arrows: app integrations · dashed arrow: QStash callback · all services use configured HTTPS endpoints</text>
+</svg>
